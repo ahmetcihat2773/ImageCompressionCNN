@@ -2,3 +2,8 @@
 4288-2848_JPEG/
 dataset/
 4288-2848_JPEG_samessmi/
+Uncompressed
+4288-2848_JPEG_samesize
+4288-2848_JPEG2000_samessmi/
+4288-2848_JPEG2000_samesize/
+__pycache__
