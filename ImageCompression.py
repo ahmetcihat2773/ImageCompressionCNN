@@ -135,3 +135,15 @@ class ImageCompression():
                     continue
                 break
   
+    def ssim_func(self):
+        from skimage.measure import compare_ssim
+        import cv2
+        imageA = cv2.imread("Image_16.tiff")
+        imageB = cv2.imread("Image_17_13.jxr")
+
+        grayA = cv2.cvtColor(imageA, cv2.COLOR_BGR2GRAY)
+        grayB = cv2.cvtColor(imageB, cv2.COLOR_BGR2GRAY)
+        
+        (score, diff) = compare_ssim(imageA, imageB, full=True)
+
+        print("SSIM: {}".format(score))            
