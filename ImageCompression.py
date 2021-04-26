@@ -51,7 +51,7 @@ class ImageCompression():
                     print(folder_name)
                     dest = shutil.move(filename,folder_name) 
         
-    def compressImage_JPEG(self,up_lim,down_lim,quality,same_file_size=False,same_ssmi = False):
+    def compressImage_JPEG(self,up_lim,down_lim,quality,same_quality_size,same_ssmi = False):
         """
         Compress file in jpeg format with given file_size
         """
@@ -99,7 +99,7 @@ class ImageCompression():
                 high_quality = 50    
                 try_num = 0        
         if same_ssmi:
-            outfolder = "4288-2848_JPEG_samequality"+str(quality)+"/"
+            outfolder = "4288-2848_JPEG_samessmi/"
             if not os.path.exists(outfolder):
                 os.makedirs(outfolder)
             for filename in os.listdir(self.input_folder):
@@ -113,10 +113,11 @@ class ImageCompression():
                         compressed_num = compressed_num + 1
                 except:
                     continue
+
     def compressImage_JPEG2(self):
         compressed_num = 0
         try_num = 0
-        low_quality = 1
+        low_quality = 30
         high_quality = 100
         same_file_size = True 
         if same_file_size:
@@ -134,6 +135,90 @@ class ImageCompression():
                 except:
                     continue
                 break
+    # --------------------------------------------------------------------
+    def compressImage_samequality(self,up_lim,down_lim,quality,same_quality,compression_type):
+        # 1024 bytes = 1kbyte
+        number = 0
+        current_dir = os.getcwd()
+        current_file_size = 0
+        current_quality = 0
+        for filename in os.listdir(current_dir):
+            if ".tiff" in filename:
+                if same_quality:
+                    outfolder = "4288-2848_"+compression_type+"_samequality_"+str(quality)+"/"
+                    if not os.path.exists(outfolder):
+                        os.makedirs(outfolder)
+                    filename_save = filename.split(".")[0]
+                    outfile = filename_save+"_"+str(number) + "."+compression_type
+                    outfile = outfolder + outfile
+                    cmd = "cons_rcp.exe -s " +filename+ " -o "+outfile + " -"+compression_type +"_quality " + str(quality)
+                    os.system(cmd) 
+                    number = number + 1   
+                else:
+                    outfolder = "4288-2848_"+compression_type+"_UP_"+str(up_lim)+"_DOWN_"+str(down_lim)+"/"
+                    filename_save = filename.split(".")[0]
+                    # filename comes like Image_101.tiff
+                    outfile = filename_save+"_"+str(number) + "."+compression_type 
+                    outfile = outfolder + outfile
+                    #outfile is the directory.    
+                    if not os.path.exists(outfolder):
+                        os.makedirs(outfolder) 
+                    # If not the folder is created just create the folder to save the output files. 
+                    # Compress the file for initial file size.
+                    self.range_list = [range(30,60),range(0,30),range(60,101)]
+                    in_range = 0
+                    for quality_range in self.range_list:
+                        print(quality_range)
+                        for quality in quality_range:
+                            
+                            cmd = "cons_rcp.exe -s " +filename+ " -o "+outfile + " -"+compression_type +"_quality " + str(quality)
+                            os.system(cmd)
+                            compressed_size = os.stat(outfile).st_size
+                            print(compressed_size)
+                            print(quality)
+
+                            if compressed_size >= down_lim and compressed_size <= up_lim:
+                                # If the file size in range we want
+                                in_range = 1
+                                break
+                                if in_range == 0: 
+
+                                    current_file_size = compressed_size
+                                    current_quality = quality
+                                    in_range = 1
+
+                                else:
+
+                                    if compressed_size > current_file_size and current_file_size <= up_lim:
+                                        current_quality = quality
+                                        current_file_size = compressed_size                        
+
+                        if in_range == 1:
+                            in_range = 0
+                            number = number + 1
+                            break
+                        if current_file_size >= down_lim and current_file_size <= up_lim:
+
+                            cmd = "cons_rcp.exe -s " +filename+ " -o "+outfile + " -"+compression_type +"_quality " + str(current_quality)
+                            os.system(cmd)
+
+                        else:
+                            os.remove(outfile)
+  
+                        
+        
+    def compressImage_samesize(self,compression_type,up_lim,down_lim):
+        number = 0
+        current_dir = os.getcwd()
+        if not os.path.exists(outfolder):
+            os.makedirs(outfolder)
+        for filename in os.listdir(current_dir):
+            if ".tiff" in filename:
+                filename_save = filename.split(".")[0]
+                outfile = filename_save+"_"+str(number) + "."+compression_type
+                outfile = outfolder + outfile
+                cmd = "cons_rcp.exe -s " +filename+ " -o "+outfile + " -"+compression_type +"_quality " + str(quality)
+
   
     def ssim_func(self):
         from skimage.measure import compare_ssim
