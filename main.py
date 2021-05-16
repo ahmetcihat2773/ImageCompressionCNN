@@ -2,7 +2,7 @@ from ImageCompression import ImageCompression
 compressionClass = ImageCompression()
 #compressionClass.compressImage_JPEG(up_lim = 250000,down_lim = 240000,quality= 20,same_file_size=False,same_ssmi = True)
 #compression_types = ["jxr","jp2","jpeg","bpg"]
-compression_types = ["jxr"]
+compression_types = ["jxr","jp2","jpeg"]
 start_size = 1024000
 stop_size = 10*start_size
 step_size = 1024*200
