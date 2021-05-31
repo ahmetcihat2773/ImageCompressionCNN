@@ -1,14 +1,19 @@
 from ImageCompression import ImageCompression
+import numpy as np
 compressionClass = ImageCompression()
 #compressionClass.compressImage_JPEG(up_lim = 250000,down_lim = 240000,quality= 20,same_file_size=False,same_ssmi = True)
 #compression_types = ["jxr","jp2","jpeg","bpg"]
-compression_types = ["jxr","jp2","jpeg"]
+compression_types = ["jpeg","jp2"]
+expected_quality = 0.7
 start_size = 1024000
 stop_size = 10*start_size
 step_size = 1024*200
 # range is 200kbyte
-quality = 60
-same_quality = False
+
+same_quality = True
 for comp_type in compression_types:
-    for file_size in range(start_size,stop_size,step_size):
-        compressionClass.compressImage_samequality(file_size+step_size,file_size,quality, same_quality, comp_type)
+    if same_quality == True:
+        compressionClass.compressImage_samequality(expected_quality,comp_type)
+    else:
+        for file_size in range(start_size,stop_size,step_size):
+            compressionClass.compressImage_samesize(file_size+step_size,file_size,comp_type)
