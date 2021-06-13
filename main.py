@@ -10,7 +10,7 @@ compressionClass = ImageCompression()
 
 compression_types = ["jpeg"]
 
-expected_quality = 0.7
+expected_quality = 0.9
 
 start_size = 1024000
 

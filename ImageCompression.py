@@ -1,10 +1,10 @@
 import os,sys,random,shutil
 
-from skimage.measure import compare_ssim
+#from skimage.measure import compare_ssim
 
-from skimage.metrics import structural_similarity as ssim
+#from skimage.metrics import structural_similarity as ssim
 
-import skimage
+#import skimage
 
 import numpy as np
 
@@ -327,128 +327,60 @@ class ImageCompression():
         """
         To read the JPEG XR we are using imagecodecs library as follow.
         #data = open('Image_1_0.jxr', 'rb').read()
-        #im = imagecodecs.jxr_decode(data)
-        
-
+        #im = imagecodecs.jxr_decode(data)       
+        https://stackoverflow.com/questions/51442437/jpeg-decompression-on-raw-image-in-python
+        XnConvert program covnert the JXR TO TIFF and it only changes the extension so it does not add any number to the 
+        JXR name.
         """
-
-        
-        #im = imageio.imread('Image_1_0.jxr',format='JXR')
-
-        # https://github.com/uclouvain/openjpeg/issues/891
-
-        # 1024 bytes = 1kbyte
-
         number = 0
-
-        #current_dir = os.getcwd()
-
         current_file_size = 0
-
         current_quality = 0
-
-        """
-
-        Try all qualities from 0 to 100. If you get the desired quality continue with the next file.
-
-        1. Convert tiff to jpeg,jpeg2000 
-
-        2. Convert compressed jpeg,jpeg2000 to tiff
-
-        3. Use this two tiff and calculate the ssim if between desired range remove the last tiff and continue with jpeg
-
-        4. Else remove jpeg and tiff and use different quality parameter compress againd and continue with step 2.
-
-        """        
-
         outfolder = "4288-2848_jxr_samequality_"+str(int(10*desired_quality))+"/"
-
         # '4288-2848_jpeg_samequality_7/'
-
         if not os.path.exists(outfolder):
-
             os.makedirs(outfolder)
-
         # This number indicates the number of images that is tried.
-
         dataset_dir = os.listdir("4288-2848/")
-
         for filename in dataset_dir:  
-
             if ".tiff" in filename:
-
                 # read tiff files from 4288-2848 
-
                 save_name = filename.split(".")[0]
-
                 # save_name has the name of the image before .tiff like Image_1
-
                 compressed_file = save_name+"_"+str(number) + "."+"jxr"
-
-                #This like Image_1_0.jpeg
-
-                filename = "4288-2848/"+filename
-
-                                       
-
                 compressed_file = outfolder + compressed_file
-
+                #This like Image_1_0.jpeg
+                filename = "4288-2848/"+filename
                 # compressed_file :: 4288-2848_jpeg_samequality_7/Image_1_0.jpeg
-
                 converted_tiff_dir = outfolder+save_name+"_"+str(number) + "."+"tiff"
-
                 # converterd_tiff_dir :: 4288-2848_jpeg_samequality_7/Image_1_0.tiff
 
-                
-
-                for temp_quality in range(30,2,-3):
+                for temp_quality in range(30,2,-2):   
 
                     print("TEMP QUALITY",temp_quality)
-
-                    compressed_file = save_name+"_"+str(number) + ".jxr"
-
-                    compressed_file = outfolder + compressed_file
-
-                    cmd = "nconvert -out jxr -q "+ str(temp_quality) +" " + filename 
-
+                    cmd = "cons_rcp.exe -s "+ filename + " -o "+ compressed_file + " -jxr_quality " +str(temp_quality)
+                    #cmd = "nconvert -out jxr -q "+ str(temp_quality) +" -o " +compressed_file+ " " + filename 
                     os.system(cmd)
-
                     # Compress the tiff to jpeg,jpeg2000.
-
                     compressed_file = compressed_file.split(".")[0]
-
-                    
-
                     compressed_file = compressed_file + ".jxr"
-
-                    cmd = "opj_decompress -i "+ compressed_file +" -o "+ converted_tiff_dir 
-
+                    cmd = "nconvert -out tiff -o "+  converted_tiff_dir +" " + compressed_file
                     os.system(cmd)
-
                     # convert jpeg to tiff back.
-
-                    ssim_val = self.calculate_ssim(filename,converted_tiff_dir)
-
+                    imageA = cv2.imread(filename)
+                    imageB = cv2.imread(converted_tiff_dir)
+                    grayA = cv2.cvtColor(imageA, cv2.COLOR_BGR2GRAY)
+                    grayB = cv2.cvtColor(imageB, cv2.COLOR_BGR2GRAY)
+                    ssim_val = self.calculate_ssim_1(grayA,grayB)
+                    print("SSIM VAL",ssim_val)
                     if ssim_val >= desired_quality - 0.03 and ssim_val<= desired_quality + 0.03:
-
-                        
-
-                        os.remove(converted_tiff_dir)                       
-
+                        os.remove(converted_tiff_dir) 
                         break
-
                     else:
-
                         os.remove(compressed_file)
-
                         os.remove(converted_tiff_dir)
-
                     if ssim_val < desired_quality - 0.03:
-
                         break
-
                 print(ssim_val)
-
             number = number + 1
 
     def same_quality_jpeg(self,desired_quality):
@@ -622,17 +554,10 @@ class ImageCompression():
         return score
 
     def ssim_sen(self,img1, img2):
-
         C1 = (0.01 * 255)**2
-
         C2 = (0.03 * 255)**2
-
-
-
-        img1 = img1.astype(np.float64)
-
-        img2 = img2.astype(np.float64)
-
+        img1 = img1.astype(np.float32)
+        img2 = img2.astype(np.float32)
         kernel = cv2.getGaussianKernel(11, 1.5)
 
         window = np.outer(kernel, kernel.transpose())
@@ -645,7 +570,9 @@ class ImageCompression():
 
         mu1_sq = mu1**2
 
+
         mu2_sq = mu2**2
+
 
         mu1_mu2 = mu1 * mu2
 
