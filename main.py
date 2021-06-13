@@ -8,7 +8,7 @@ compressionClass = ImageCompression()
 
 #compression_types = ["jxr","jp2","jpeg","bpg"]
 
-compression_types = ["jpeg"]
+compression_types = ["jxr"]
 
 expected_quality = 0.9
 
@@ -20,7 +20,7 @@ step_size = 1024*200
 
 # range is 200kbyte
 
-same_quality = True
+same_quality = False
 
 for comp_type in compression_types:
 
@@ -32,5 +32,5 @@ for comp_type in compression_types:
 
         for file_size in range(start_size,stop_size,step_size):
 
-            compressionClass.compressImage_samesize(file_size+step_size,file_size,comp_type)
+            compressionClass.samesize_jxr(file_size+step_size,file_size)
 

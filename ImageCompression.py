@@ -205,6 +205,41 @@ class ImageCompression():
 
                     
 
+    def samesize_jxr(self,up_lim,down_lim):
+                
+        number = 0
+        current_file_size = 0
+        current_quality = 0
+        outfolder = "4288-2848_jxr_UP_"+str(up_lim)+"_DOWN_"+str(down_lim)+"/"
+        if not os.path.exists(outfolder):
+            os.makedirs(outfolder)  
+        for filename in os.listdir("4288-2848"):
+            if ".tiff" in filename:
+                save_name = filename.split(".")[0]
+                # save_name has the name of the image before .tiff like Image_1
+                compressed_file = save_name+"_"+str(number) + "."+"jxr"
+                compressed_file = outfolder + compressed_file
+                #This like Image_1_0.jpeg
+                filename = "4288-2848/"+filename
+                # compressed_file :: 4288-2848_jpeg_samequality_7/Image_1_0.jpeg
+                for temp_quality in range(80,2,-5):   
+                    print("TEMP QUALITY",temp_quality)
+                    cmd = "cons_rcp.exe -s "+ filename + " -o "+ compressed_file + " -jxr_quality " +str(temp_quality)
+                    #cmd = "nconvert -out jxr -q "+ str(temp_quality) +" -o " +compressed_file+ " " + filename 
+                    os.system(cmd)
+                    # Compress the tiff to jpeg,jpeg2000.
+                    compressed_size = os.stat(compressed_file).st_size
+                    if compressed_size >= down_lim and compressed_size <= up_lim:
+                        # If the file size in range we want
+                        break
+                    else:
+                        os.remove(compressed_file)
+                    if compressed_size > up_lim:
+                        os.remove(compressed_file)
+                        break
+                number = number + 1            
+
+
     def same_quality_jpeg2000(self,desired_quality):
 
         # https://github.com/uclouvain/openjpeg/issues/891
@@ -355,7 +390,6 @@ class ImageCompression():
                 # converterd_tiff_dir :: 4288-2848_jpeg_samequality_7/Image_1_0.tiff
 
                 for temp_quality in range(30,2,-2):   
-
                     print("TEMP QUALITY",temp_quality)
                     cmd = "cons_rcp.exe -s "+ filename + " -o "+ compressed_file + " -jxr_quality " +str(temp_quality)
                     #cmd = "nconvert -out jxr -q "+ str(temp_quality) +" -o " +compressed_file+ " " + filename 
