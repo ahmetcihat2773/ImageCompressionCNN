@@ -8,29 +8,35 @@ compressionClass = ImageCompression()
 
 #compression_types = ["jxr","jp2","jpeg","bpg"]
 
-compression_types = ["jxr"]
+compression_types = ["jpeg","jpg2"]
 
-expected_quality = 0.9
+expected_quality = [0.9]
 
-start_size = 1024000
+start_size = 3024000
 
 stop_size = 10*start_size
 
 step_size = 1024*200
 
-# range is 200kbyte
+# 1024 byte 1kbyte and 5kbyte step size.
 
 same_quality = False
 
 for comp_type in compression_types:
 
     if same_quality == True:
-
-        compressionClass.same_quality_jxr(expected_quality)
+        for expected_val in expected_quality:
+            compressionClass.same_quality_jxr(expected_val)
 
     else:
+        if comp_type == "jpeg":
+            compressionClass.compressImage_samesize_jpeg(start_size+step_size,start_size-step_size)
+        elif comp_type = "jpg2":
+            compressionClass.compressImage_samesize_jpeg2000(start_size+step_size,start_size-step_size,"jpg2")
 
-        for file_size in range(start_size,stop_size,step_size):
+        else:
+            compressionClass.samesize_jxr(start_size+step_size,start_size-step_size)
 
-            compressionClass.samesize_jxr(file_size+step_size,file_size)
+
+        
 

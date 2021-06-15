@@ -119,7 +119,7 @@ class ImageCompression():
 
 
 
-    def compressImage_samesize(self,up_lim,down_lim,compression_type):
+    def compressImage_samesize_jpeg2000(self,up_lim,down_lim,compression_type):
 
         # 1024 bytes = 1kbyte
 
@@ -145,9 +145,74 @@ class ImageCompression():
 
                 outfile = outfolder + outfile
 
-                useless_file = filename_save+"_"+str(number) + "-1.jpeg"
+                filename = "4288-2848/" + filename
 
-                useless_file = outfolder + useless_file
+                #outfile is the directory.    
+
+                if not os.path.exists(outfolder):
+
+                    os.makedirs(outfolder) 
+
+                    
+
+                # If not the folder is created just create the folder to save the output files. 
+
+                # Compress the file for initial file size.
+                quality_type = "-"+compression_type+"_quality"
+
+                for quality in range(40,80):                  
+                    #cmd = "magick convert "+ filename + " -quality "+ str(quality)+ " "+ outfile
+                    cmd = "cons_rcp.exe -s " + filename + " -o " + outfile + " " + quality_type + " " + str(quality)  
+                    # 'cons_rcp.exe -s Image_1.tiff -o 4288-2848_jxr_UP_1228800_DOWN_1024000/Image_1_0.jxr -jxr_quality 0'
+
+                    os.system(cmd)
+
+                    compressed_size = os.stat(outfile).st_size
+
+                    print(compressed_size)
+
+                    print(quality)
+
+
+
+                    if compressed_size >= down_lim and compressed_size <= up_lim or compressed_size > up_lim:
+
+                        # If the file size in range we want
+                        print("FILE IN BOX")
+
+                        break               
+
+                    else:
+
+                        os.remove(outfile)
+
+            number = number + 1
+
+    def compressImage_samesize_jpeg(self,up_lim,down_lim):
+
+        # 1024 bytes = 1kbyte
+
+        number = 0
+
+        current_file_size = 0
+
+        current_quality = 0
+
+        for filename in os.listdir("4288-2848"):
+
+            if ".tiff" in filename:                
+
+                outfolder = "4288-2848_jpeg_UP_"+str(up_lim)+"_DOWN_"+str(down_lim)+"/"
+
+                filename_save = filename.split(".")[0]
+
+                # filename_save is like Image_101
+
+                # filename comes like Image_101.tiff
+
+                outfile = filename_save+"_"+str(number) + ".jpeg" 
+
+                outfile = outfolder + outfile
 
                 filename = "4288-2848/" + filename
 
@@ -162,20 +227,22 @@ class ImageCompression():
                 # If not the folder is created just create the folder to save the output files. 
 
                 # Compress the file for initial file size.
+                quality_type = "-jpeg_quality"
 
-                for quality in range(40,100):                  
-
-                    cmd = "convert -quality "+ str(quality)+" "+ filename +" "+ outfile
-
+                for quality in range(40,80):                  
+                    cmd = "magick convert "+ filename + " -quality "+ str(quality)+ " "+ outfile
+                    #cmd = "cons_rcp.exe -s " + filename + " -o " + outfile + " " + quality_type + " " + str(quality)  
                     # 'cons_rcp.exe -s Image_1.tiff -o 4288-2848_jxr_UP_1228800_DOWN_1024000/Image_1_0.jxr -jxr_quality 0'
 
                     os.system(cmd)
+                    current_file = filename_save + "_"+ str(number) +"-0" +".jpeg" 
+                    current_file = outfolder + current_file
+                    compressed_size = os.stat(current_file).st_size
 
+                    useless_file = filename_save + "_"+ str(number) +"-1" +".jpeg" 
+                    useless_file = outfolder + useless_file
                     os.remove(useless_file)
 
-                    compressed_file = outfolder + filename_save+"_"+str(number) + "-0.jpeg"
-
-                    compressed_size = os.stat(compressed_file).st_size
 
                     print(compressed_size)
 
@@ -183,23 +250,16 @@ class ImageCompression():
 
 
 
-                    if compressed_size >= down_lim and compressed_size <= up_lim:
+                    if compressed_size >= down_lim and compressed_size <= up_lim or compressed_size > up_lim:
 
                         # If the file size in range we want
+                        print("FILE IN BOX")
 
-                        break
-
-                
+                        break               
 
                     else:
 
-                        os.remove(compressed_file)
-
-                    if compressed_size > up_lim:
-
-                        os.remove(compressed_file)
-
-                        break
+                        os.remove(current_file)
 
             number = number + 1
 
@@ -222,21 +282,25 @@ class ImageCompression():
                 #This like Image_1_0.jpeg
                 filename = "4288-2848/"+filename
                 # compressed_file :: 4288-2848_jpeg_samequality_7/Image_1_0.jpeg
-                for temp_quality in range(80,2,-5):   
+                for temp_quality in range(60,2,-5):   
                     print("TEMP QUALITY",temp_quality)
                     cmd = "cons_rcp.exe -s "+ filename + " -o "+ compressed_file + " -jxr_quality " +str(temp_quality)
                     #cmd = "nconvert -out jxr -q "+ str(temp_quality) +" -o " +compressed_file+ " " + filename 
                     os.system(cmd)
                     # Compress the tiff to jpeg,jpeg2000.
                     compressed_size = os.stat(compressed_file).st_size
+                    print("FILE SIZE",compressed_size)
                     if compressed_size >= down_lim and compressed_size <= up_lim:
                         # If the file size in range we want
                         break
                     else:
                         os.remove(compressed_file)
-                    if compressed_size > up_lim:
-                        os.remove(compressed_file)
-                        break
+                    if compressed_size < down_lim:
+                        try:
+                            os.remove(compressed_file)
+                            break
+                        except:
+                            break
                 number = number + 1            
 
 
